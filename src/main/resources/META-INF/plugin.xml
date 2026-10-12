@@ -1,0 +1,12 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>com.mako.support</id>
+    <name>Mako</name>
+    <vendor email="zarinpy@gmail.com">omid zarinmahd</vendor>
+    <description><![CDATA[
+        <p>Editor support for the <a href="https://www.makotemplates.org/">Mako</a> template language.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.xml</depends>
+</idea-plugin>
