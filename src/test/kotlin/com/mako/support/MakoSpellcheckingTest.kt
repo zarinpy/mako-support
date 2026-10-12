@@ -3,11 +3,10 @@ package com.mako.support
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.spellchecker.SpellCheckerSeveritiesProvider
 import com.intellij.spellchecker.tokenizer.SpellcheckingStrategy
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.mako.support.lang.MakoLanguage
 import com.mako.support.spellcheck.MakoSpellcheckingStrategy
 
-class MakoSpellcheckingTest : BasePlatformTestCase() {
+class MakoSpellcheckingTest : MakoPlatformTestCase() {
     fun testTokenizerSkipsCodeAndSpellsText() {
         val word = "zzqxwronk"
         val text = """

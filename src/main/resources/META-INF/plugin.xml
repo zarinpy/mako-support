@@ -35,7 +35,5 @@
             language="Mako"
             implementationClass="com.mako.support.spellcheck.MakoSpellcheckingStrategy"/>
         <multiHostInjector implementation="com.mako.support.inject.MakoPythonInjector"/>
-        <applicationInitializedListener
-            implementation="com.mako.support.inject.MakoPythonTestLayout"/>
     </extensions>
 </idea-plugin>

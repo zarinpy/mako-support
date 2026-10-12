@@ -22,16 +22,10 @@ import com.mako.support.psi.MakoAttribute
 import com.mako.support.psi.MakoControlStatement
 import com.mako.support.psi.MakoExpression
 import com.mako.support.psi.MakoModuleBlock
-import com.mako.support.inject.MakoPythonTestLayout
 import com.mako.support.psi.MakoPythonBlock
 import java.nio.file.Files
 
-class MakoPythonInjectionTest : com.intellij.testFramework.fixtures.BasePlatformTestCase() {
-    override fun setUp() {
-        super.setUp()
-        MakoPythonTestLayout.prepare()
-    }
-
+class MakoPythonInjectionTest : MakoPlatformTestCase() {
     fun testContextWriteCompletesAndResolves() {
         myFixture.configureByText("page.mako", "\${context.write(\"x\")}")
         val write = referenceNamed("write")
