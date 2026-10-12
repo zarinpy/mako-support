@@ -2,11 +2,10 @@ package com.mako.support
 
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.fileTypes.FileTypeManager
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.mako.support.lang.MakoFileType
 import com.mako.support.lang.MakoLanguage
 
-class MakoFileTypeTest : BasePlatformTestCase() {
+class MakoFileTypeTest : MakoPlatformTestCase() {
     fun testMakoExtensions() {
         val types = FileTypeManager.getInstance()
         assertEquals(MakoFileType, types.getFileTypeByExtension("mako"))

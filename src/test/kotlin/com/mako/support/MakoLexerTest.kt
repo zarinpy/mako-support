@@ -1,9 +1,8 @@
 package com.mako.support
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.mako.support.lexer.MakoLexer
 
-class MakoLexerTest : BasePlatformTestCase() {
+class MakoLexerTest : MakoPlatformTestCase() {
     fun testTokensCoverTheSource() {
         val text = """
             # coding: utf-8

@@ -11,12 +11,11 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.templateLanguages.TemplateDataLanguageMappings
 import com.intellij.psi.xml.XmlTag
 import com.intellij.psi.xml.XmlTokenType
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.util.FileContentUtilCore
 import com.mako.support.psi.MakoExpression
 import com.mako.support.template.MakoFileViewProvider
 
-class MakoDataLanguageTest : BasePlatformTestCase() {
+class MakoDataLanguageTest : MakoPlatformTestCase() {
     private val fixtureText = "<div class=\"\${cls}\"><span></div>"
 
     fun testHtmlWrapsTheExpression() {
