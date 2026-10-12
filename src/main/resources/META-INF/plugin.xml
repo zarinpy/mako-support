@@ -9,4 +9,29 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.xml</depends>
+    <depends>com.intellij.modules.spellchecker</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType
+            name="Mako"
+            implementationClass="com.mako.support.lang.MakoFileType"
+            fieldName="INSTANCE"
+            language="Mako"
+            extensions="mako;mak"/>
+        <lang.parserDefinition
+            language="Mako"
+            implementationClass="com.mako.support.parser.MakoParserDefinition"/>
+        <lang.fileViewProviderFactory
+            language="Mako"
+            implementationClass="com.mako.support.template.MakoFileViewProviderFactory"/>
+        <lang.syntaxHighlighterFactory
+            language="Mako"
+            implementationClass="com.mako.support.highlight.MakoSyntaxHighlighterFactory"/>
+        <editorHighlighterProvider
+            filetype="Mako"
+            implementationClass="com.mako.support.highlight.MakoEditorHighlighterProvider"/>
+        <spellchecker.support
+            language="Mako"
+            implementationClass="com.mako.support.spellcheck.MakoSpellcheckingStrategy"/>
+    </extensions>
 </idea-plugin>
