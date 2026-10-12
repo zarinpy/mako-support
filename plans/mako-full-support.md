@@ -9,14 +9,14 @@ The plugin makes `.mako` and `.mak` files, and any file the user maps to Mako, a
 | Item | Choice |
 | --- | --- |
 | Plugin name | Mako |
-| Plugin id | `com.mako.support` (replace `org.jetbrains.plugins.template` during Phase 0) |
+| Plugin id | `com.mako.support` |
 | Language version | Mako 1.4.3. Behavior that changed across 1.x is the 1.4.3 behavior. |
 | Primary IDE | PyCharm 2025.3 (unified product). Template-language APIs are available there without a paid-only module. |
 | Also runs in | IntelliJ IDEA 2025.3 and other IDEs that have the Python plugin installed. |
 | Implementation | Kotlin, on the current Gradle scaffold (`intellij-platform` plugin, JDK 21). |
-| Sample code | Remove the template tool window, startup activity, and sample service. They are unrelated to a language plugin. |
+| Sample code | Removed in Phase 0: tool window, startup activity, project service, and their tests. |
 
-`build.gradle.kts` currently runs `intellijIdea("2025.3.6.1")`. Development runs should use a PyCharm target so the Python plugin and template-language APIs are present. Publish with a dependency on `com.intellij.modules.python` and on the XML/HTML module, so IDEA users are offered the Python plugin at install time.
+`build.gradle.kts` targets `pycharm("2025.3.6.1")` and also bundles `PythonCore`, because the PyCharm coordinate alone did not put Python classes on the compile classpath. `plugin.xml` depends on `com.intellij.modules.platform`, `com.intellij.modules.xml`, the spellchecker module, and `com.intellij.modules.python`. `runIde` is PyCharm. A separate `runPyCharm` task remains. Slice-level status is in [phases-1-5.md](phases-1-5.md).
 
 ## What "full" means
 
@@ -275,6 +275,8 @@ src/test/
   oracle/          Python script that dumps mako.lexer output for the corpus
 ```
 
+After Phase 3 the packages on disk are `lang/`, `lexer/`, `parser/`, `psi/`, `highlight/` (highlighter only), `template/`, `inject/`, and `spellcheck/`. Stub resources are `src/main/resources/mako-stubs/*.py`. The other directories in this tree are still future work. The parser that shipped is flat: control lines and tag bodies are siblings, not nested the way the sketch below shows.
+
 ### Lexer and parser
 
 Write a hand-written lexer. Mako's grammar is mode-heavy (text, expression, expression-filter, tag, tag-attribute, raw text, comment, control line) and a JFlex port of `mako/lexer.py` fights the brace-matching rules inside expressions. The lexer is incremental and does not call Python.
@@ -308,6 +310,8 @@ A dev-only Python script loads Mako 1.4.3, runs `mako.lexer.Lexer(source).parse(
 The script is not shipped in the plugin. Pin the Mako version in the script's requirements so an upstream lexer change is a deliberate bump.
 
 ### Python injection
+
+Phase 3 shipped the host table, the four stub classes pasted into the prefix, module-block concatenation, page args, local defs, and `loop` inside `% for`. Project `imports`, inherited defs, `caller.body`, and the `strict_undefined` warning are still Phase 4. The `from mako_support_stubs import ...` line was dropped; the stub text is inlined, and the resource files are `.py`. The execution notes are in [phases-1-5.md](phases-1-5.md).
 
 One `MultiHostInjector` serves every host. The fragment kind differs:
 
@@ -463,45 +467,57 @@ Quick fixes ship with the inspections that have one safe edit: insert the closer
 
 ## Phases
 
-Each phase is shippable. Later phases depend on earlier ones. Tests from a phase stay green.
+Each phase is shippable. Later phases depend on earlier ones. Tests from a phase stay green. Status on 2026-10-12:
 
-### Phase 0 — Turn the template into this plugin
+| Phase | State |
+| --- | --- |
+| 0 | Done (`647d3a1`). Python `<depends>` and the PyCharm Gradle target landed in Phase 3. |
+| 1 | Partial. Language, file type without an icon, lexer, flat PSI, and the highlighter shipped in `33dd387`. Icon, color settings, brace matcher, commenter, quote handler, nested PSI, stub types, oracle, and structural inspections are open. |
+| 2 | Done (`33dd387`, merged to `main` as `3a1da27`). |
+| 3 | Done (`7f11572` on `feature/phase-3-python-injection`). 26 tests, 0 failures. |
+| 4–7 | Not started. |
 
-- Set plugin id, name, vendor, and description.
-- Delete the sample tool window, project activity, service, and their tests.
-- Depend on `com.intellij.modules.python` and the XML module.
-- Add a PyCharm run configuration next to the existing IDEA one.
-- Keep the Gradle changelog and GitHub workflows.
+### Phase 0 — Turn the template into this plugin — done
 
-Exit: `./gradlew check` passes, and the sandbox IDE loads an empty plugin.
+- Set plugin id, name, vendor, and description. Done in `647d3a1`.
+- Delete the sample tool window, project activity, service, and their tests. Done.
+- Depend on `com.intellij.modules.python` and the XML module. XML was already present. The Python module dependency was added in Phase 3 (`7f11572`), together with `pycharm("2025.3.6.1")` and `bundledPlugin("PythonCore")`.
+- Add a PyCharm run configuration next to the existing IDEA one. Done. `runIde` itself is now the PyCharm target, and `runPyCharm` remains.
+- Keep the Gradle changelog and GitHub workflows. Done. `template-cleanup.yml` and `template-verify.yml` stay deleted.
 
-### Phase 1 — Lexer, parser, highlighting
+Exit: met for the empty plugin. `./gradlew check` is green, now with the Phase 2 and Phase 3 tests included (26 tests).
 
-- File type for `.mako` and `.mak`, with its own icon.
-- Lexer, parser, PSI, highlighter, color settings, brace matcher, commenter.
-- Oracle corpus and tests for every construct in the language-coverage tables.
-- Structural inspections: unclosed constructs, bad control nesting, missing required attributes, duplicate blocks, extra `<%page>`.
+### Phase 1 — Lexer, parser, highlighting — partial
 
-Exit: a Mako file highlights correctly, including nested expressions, `<%text>`, `%%`, and filters. HTML is still plain text in this phase.
+- File type for `.mako` and `.mak`. Done. Its own icon is not done.
+- Lexer, flat parser, PSI, and highlighter. Done in `33dd387`. Color settings, brace matcher, and commenter are not done. The quote handler is not done either.
+- Oracle corpus and tests for every construct in the language-coverage tables. Not done.
+- Structural inspections: unclosed constructs, bad control nesting, missing required attributes, duplicate blocks, extra `<%page>`. Not done.
 
-### Phase 2 — Data language
+The shipped parser is flat. Control lines and tag bodies are not nested, and there are no stub element types. Phase 4 has to introduce those types, or consume the flat attributes, until the rest of this phase nests the tree. `MakoInjectionModel` already walks the flat tree. A nested parser has to keep the injection tests green.
 
-- Template file view provider and template-data element type.
-- HTML by default. Per-file and per-directory data language.
-- Spellcheck boundaries.
-- Tests that an HTML tag split by a Mako expression still completes and still matches its closer.
+Exit: not met. Highlighting covers nested expressions, `<%text>`, `%%`, and filters. Broken nesting is not an inspection. HTML is a data language now (Phase 2), not a single plain-text token.
 
-Exit: `<div class="${cls}">` behaves as HTML around the expression and as Mako inside it.
+### Phase 2 — Data language — done
 
-### Phase 3 — Python injection
+- Template file view provider and template-data element type. Done.
+- HTML by default. A per-file plain-text data language is tested. Per-directory mapping is the platform template-data setting.
+- Spellcheck boundaries. Done. Comments and template text are checked. Expression bodies, Python blocks, tag keywords, attribute names, and control bodies are skipped.
+- Tests that an HTML tag split by a Mako expression still completes and still matches its closer. Done (`MakoDataLanguageTest`).
 
-- Injector for every host kind, with the correct fragment wrapper.
-- Shipped `mako-stubs` for `Context`, `Namespace`, `LoopContext`, `Undefined`.
-- Preamble: `<%! %>`, page args, local defs, builtin names, `loop` only inside `% for`.
-- Def-local scoping matches Python.
-- Tests: completion of `context.write`, `loop.index`, a local def, and a name from `<%! %>`; a resolution failure for `context` inside `<%! %>`; signature errors on a bad `<%def name>`.
+Exit: met. `<div class="${cls}">` behaves as HTML around the expression and as Mako inside it.
 
-Exit: Python completion and inspections work inside expressions, blocks, and control lines.
+### Phase 3 — Python injection — done
+
+- Injector for every host kind, with the correct fragment wrapper. Done (`MakoPythonInjector`).
+- Shipped `mako-stubs` for `Context`, `Namespace`, `LoopContext`, `Undefined`. Done, as `.py` resources whose text is pasted into the prefix. No `mako_support_stubs` import.
+- Preamble: `<%! %>`, page args, local defs, builtin names, `loop` only inside `% for`. Done. `enable_loop` comes from the first `<%page>` until Phase 4 settings exist.
+- Def-local scoping matches Python. Done, via an assignment scan in `MakoPythonText` and an open `def` in the prefix.
+- Tests: completion of `context.write`, `loop.index`, a local def, and a name from `<%! %>`; a resolution failure for `context` inside `<%! %>`; signature errors on a bad `<%def name>`. Done, in `MakoPythonInjectionTest` (11 tests).
+
+`MakoPythonTestLayout` keeps the PyCharm test sandbox from throwing in the pro helpers locator. It lives in the test source set and runs from `MakoPlatformTestCase.setUp`, not from the plugin.
+
+Exit: met for completion and the Python highlighter on the tested hosts. `context` is absent from module blocks. `loop` exists only inside `% for`. Python inspections beyond syntax highlighting are the platform's, on the injected fragment. Cross-file inspections are Phase 4. There is no Phase 1 oracle suite.
 
 ### Phase 4 — Symbols across files
 
@@ -575,4 +591,6 @@ These are real Mako features and they stay out of the plugin because they are ap
 
 ## First implementation step
 
-Phase 0, then the lexer and the oracle. Do not start completion or injection before the corpus round-trips through Mako 1.4.3. Every later feature hangs off those spans.
+Phase 0, Phase 2, and Phase 3 are done. The lexer, the flat parser, the highlighter, the HTML data layer, and Python injection are in the tree. Do not start over at Phase 0, and do not rebuild those pieces.
+
+Still open inside Phase 1: the file-type icon, color settings, brace matcher, commenter, quote handler, structural inspections, nested control and tag PSI, stub element types, and the Mako 1.4.3 oracle. The next product phase is Phase 4 (settings, stub index, URI resolution, rename, cross-file inspections). Phase 4 can start before the oracle. A change that nests the parser has to keep the injection tests green. Phases 6 and 7 stay out until 4 and 5 are done.
