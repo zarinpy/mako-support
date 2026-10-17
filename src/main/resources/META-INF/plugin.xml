@@ -35,5 +35,17 @@
             language="Mako"
             implementationClass="com.mako.support.spellcheck.MakoSpellcheckingStrategy"/>
         <multiHostInjector implementation="com.mako.support.inject.MakoPythonInjector"/>
+        <completion.contributor language="Mako" implementationClass="com.mako.support.edit.MakoCompletionContributor"/>
+        <completion.contributor language="Python" implementationClass="com.mako.support.edit.MakoTagPrefixContributor" order="first"/>
+        <typedHandler implementation="com.mako.support.edit.MakoTypedHandler"/>
+        <enterHandlerDelegate implementation="com.mako.support.edit.MakoEnterHandler"/>
+        <lang.foldingBuilder language="Mako" implementationClass="com.mako.support.edit.MakoFoldingBuilder"/>
+        <lang.psiStructureViewFactory language="Mako" implementationClass="com.mako.support.edit.MakoStructureViewFactory"/>
+        <breadcrumbsInfoProvider implementation="com.mako.support.edit.MakoBreadcrumbsProvider"/>
+        <liveTemplateContext contextId="Mako" implementation="com.mako.support.edit.MakoTemplateContext"/>
+        <defaultLiveTemplatesProvider implementation="com.mako.support.edit.MakoLiveTemplatesProvider"/>
+        <lang.surroundDescriptor language="Mako" implementationClass="com.mako.support.edit.MakoSurroundDescriptor"/>
+        <lang.formatter language="Mako" implementationClass="com.mako.support.edit.MakoFormattingModelBuilder"/>
+        <codeInsight.lineMarkerProvider language="Mako" implementationClass="com.mako.support.edit.MakoLineMarkerProvider"/>
     </extensions>
 </idea-plugin>

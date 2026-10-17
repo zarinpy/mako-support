@@ -15,6 +15,7 @@ abstract class MakoInjectionHost(node: ASTNode) : MakoElement(node), PsiLanguage
     override fun updateText(text: String): PsiLanguageInjectionHost = this
 
     override fun createLiteralTextEscaper(): LiteralTextEscaper<out PsiLanguageInjectionHost> {
-        return LiteralTextEscaper.createSimple(this)
+        // createSimple(host) forces a one-line fragment, and the injected document then drops newlines.
+        return LiteralTextEscaper.createSimple(this, false)
     }
 }

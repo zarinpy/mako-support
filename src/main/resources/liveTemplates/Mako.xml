@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templateSet group="Mako">
+  <template name="def" value="&lt;%def name=&quot;$NAME$()&quot;&gt;&#10;$END$&#10;&lt;/%def&gt;" description="def" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+  <template name="block" value="&lt;%block name=&quot;$NAME$&quot;&gt;&#10;$END$&#10;&lt;/%block&gt;" description="block" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+  <template name="inherit" value="&lt;%inherit file=&quot;$FILE$&quot;/&gt;" description="inherit" toReformat="false" toShortenFQNames="false">
+    <variable name="FILE" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+  <template name="include" value="&lt;%include file=&quot;$FILE$&quot;/&gt;" description="include" toReformat="false" toShortenFQNames="false">
+    <variable name="FILE" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+  <template name="namespace" value="&lt;%namespace name=&quot;$NAME$&quot; file=&quot;$FILE$&quot;/&gt;" description="namespace" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <variable name="FILE" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+  <template name="for" value="% for $ITEM$ in $ITER$:&#10;$END$&#10;% endfor" description="for" toReformat="false" toShortenFQNames="false">
+    <variable name="ITEM" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <variable name="ITER" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+  <template name="if" value="% if $COND$:&#10;$END$&#10;% endif" description="if" toReformat="false" toShortenFQNames="false">
+    <variable name="COND" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+  <template name="call" value="&lt;%call expr=&quot;$EXPR$&quot;&gt;&#10;$END$&#10;&lt;/%call&gt;" description="call" toReformat="false" toShortenFQNames="false">
+    <variable name="EXPR" expression="" defaultValue="&quot;&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="Mako" value="true"/>
+    </context>
+  </template>
+</templateSet>

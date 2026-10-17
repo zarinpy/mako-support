@@ -36,12 +36,11 @@ class MakoParserDefinition : ParserDefinition {
 
     override fun getWhitespaceTokens(): TokenSet = TokenSet.EMPTY
 
+    // `<%doc>` is a region, not a line comment. Comment tokens are bound into the
+    // previous element, which would hide a doc block that follows template text.
     override fun getCommentTokens(): TokenSet = TokenSet.create(
         MakoTokenTypes.COMMENT,
         MakoTokenTypes.CODING_COMMENT,
-        MakoTokenTypes.DOC_START,
-        MakoTokenTypes.DOC_BODY,
-        MakoTokenTypes.DOC_END,
     )
 
     override fun getStringLiteralElements(): TokenSet = TokenSet.create(MakoTokenTypes.ATTR_VALUE)
