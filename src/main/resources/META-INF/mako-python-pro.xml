@@ -1,0 +1,10 @@
+<idea-plugin>
+    <!-- Loaded only when plugin Pythonid is installed. Classes here reference its template APIs. -->
+    <extensions defaultExtensionNs="Pythonid">
+        <templateContextProvider implementation="com.mako.support.run.MakoFramework"/>
+        <templateLanguageSubstitutorDelegate implementation="com.mako.support.run.MakoFramework"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.mako.support">
+        <renderContext implementation="com.mako.support.run.MakoFramework"/>
+    </extensions>
+</idea-plugin>

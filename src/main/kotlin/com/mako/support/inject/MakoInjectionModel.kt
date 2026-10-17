@@ -2,9 +2,11 @@ package com.mako.support.inject
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
 import com.mako.support.lexer.MakoTokenTypes
+import com.mako.support.run.MakoRenderContext
 import com.mako.support.psi.MakoAttribute
 import com.mako.support.psi.MakoClosingTag
 import com.mako.support.psi.MakoControlStatement
@@ -18,6 +20,8 @@ internal class MakoInjectionModel private constructor(
     private val pageParameters: List<String>,
     private val topLevelDefs: List<DefRegion>,
     private val forRanges: List<TextRange>,
+    private val pageContext: List<String>,
+    private val defContext: Map<String, List<String>>,
 ) {
     data class RenderHeader(val text: String, val indent: String)
 
@@ -26,6 +30,9 @@ internal class MakoInjectionModel private constructor(
         appendCode(builder, moduleBodies.joinToString("") { ensureTrailingNewline(it.text) })
         appendCode(builder, MakoStubs.preamble)
         for (name in pageParameters) builder.append(name).append(" = UNDEFINED\n")
+        for (name in pageContext) {
+            if (name !in pageParameters) builder.append(name).append(" = UNDEFINED\n")
+        }
         val chain = chainAt(offset)
         val openIds = chain.map { it.id }.toSet()
         for (def in topLevelDefs) {
@@ -33,7 +40,7 @@ internal class MakoInjectionModel private constructor(
                 builder.append(def.closedStub()).append('\n')
             }
         }
-        val indent = openChain(builder, chain, insideFor(offset))
+        val indent = openChain(builder, chain, insideFor(offset), defContext)
         if (builder.isNotEmpty() && builder.last() != '\n') builder.append('\n')
         return RenderHeader(builder.toString(), indent)
     }
@@ -62,7 +69,11 @@ internal class MakoInjectionModel private constructor(
     companion object {
         fun of(file: PsiFile): MakoInjectionModel {
             return CachedValuesManager.getCachedValue(file) {
-                CachedValueProvider.Result.create(build(file), file)
+                CachedValueProvider.Result.create(
+                    build(file),
+                    file,
+                    PsiManager.getInstance(file.project).modificationTracker,
+                )
             }
         }
 
@@ -152,7 +163,16 @@ internal class MakoInjectionModel private constructor(
                     is KindFrame -> Unit
                 }
             }
-            return MakoInjectionModel(moduleBodies, enableLoop, pageParameters.toList(), topLevelDefs, forRanges)
+            val render = MakoRenderContext.of(file)
+            return MakoInjectionModel(
+                moduleBodies,
+                enableLoop,
+                pageParameters.toList(),
+                topLevelDefs,
+                forRanges,
+                render?.pageNames(file).orEmpty(),
+                render?.defNames(file).orEmpty(),
+            )
         }
 
         private fun defRegion(tag: MakoTag, keyword: String, id: Int): DefRegion? {
@@ -230,7 +250,12 @@ internal class MakoInjectionModel private constructor(
             return text
         }
 
-        private fun openChain(builder: StringBuilder, chain: List<DefRegion>, loop: Boolean): String {
+        private fun openChain(
+            builder: StringBuilder,
+            chain: List<DefRegion>,
+            loop: Boolean,
+            defContext: Map<String, List<String>>,
+        ): String {
             var indent = ""
             for ((index, def) in chain.withIndex()) {
                 if (def.emitStub) {
@@ -238,6 +263,11 @@ internal class MakoInjectionModel private constructor(
                     indent += "    "
                     for (local in def.locals) {
                         builder.append(indent).append(local).append(" = None\n")
+                    }
+                    for (name in defContext[def.name].orEmpty()) {
+                        if (name !in def.parameterNames && name !in def.locals) {
+                            builder.append(indent).append(name).append(" = UNDEFINED\n")
+                        }
                     }
                 }
                 val next = chain.getOrNull(index + 1)?.id

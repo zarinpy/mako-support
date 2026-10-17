@@ -20,6 +20,9 @@ dependencies {
         // Confirmed from the PyCharm 2025.3.6.1 layout: plugins/python-ce publishes
         // id PythonCore and module com.intellij.modules.python.
         bundledPlugin("PythonCore")
+        // Professional Python (plugins/python, id Pythonid) hosts the template-language
+        // dropdown. Compile against it; plugin.xml keeps the dependency optional.
+        bundledPlugin("Pythonid")
         testFramework(TestFrameworkType.Platform)
     }
 }
